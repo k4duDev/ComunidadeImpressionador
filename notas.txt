@@ -1,0 +1,5 @@
+______________Bibliotecas____________________
+
+Flask
+Flask-wtf
+email_validator
