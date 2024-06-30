@@ -8,11 +8,11 @@ class FormCriarConta(FlaskForm):
     email = StringField('E-mail', validators=[DataRequired(), Email()])
     senha = PasswordField('Senha', validators=[DataRequired(), Length(6, 20)])
     confirmacao_senha = PasswordField('Confirmacao da Senha', validators=[DataRequired(), EqualTo('senha')])
-    botao_subimit_criarconta =SubmitField('Criar conta')
+    botao_submit_criarconta =SubmitField('Criar conta')
 
 
 class FormLogin(FlaskForm):
     email = StringField('E-mail', validators=[DataRequired(), Email()])
     senha = PasswordField('Senha', validators=[DataRequired(), Length(6, 20)])
     lembrar_dados = BooleanField('Lembra-Me')
-    botao_subimit_login =SubmitField('Fazer Login')
+    botao_submit_login =SubmitField('Fazer Login')
