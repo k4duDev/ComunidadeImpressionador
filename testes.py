@@ -1,9 +1,10 @@
-from comunidadeimpressionadora.routes import app, db
+from comunidadeimpressionadora import app, db
 from comunidadeimpressionadora.models import Usuario, Post
 
-if not 'comunidade.db':
-    with app.app_context():
-        db.create_all()
+
+with app.app_context():
+    db.drop_all()
+    db.create_all()
 
 
 # with app.app_context():
