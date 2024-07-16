@@ -1,17 +1,17 @@
 from flask import render_template, redirect, url_for, flash, request
 from comunidadeimpressionadora import app, db, bcrypt
-from comunidadeimpressionadora.forms import FormLogin, FormCriarConta, FormEditarPerfil
-from comunidadeimpressionadora.models import Usuario
+from comunidadeimpressionadora.forms import FormLogin, FormCriarConta, FormEditarPerfil, FormCriarPost, FormEditarPost
+from comunidadeimpressionadora.models import Usuario, Post
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets, os
 from PIL import Image
 
-lista_usuarios = ['Lira', 'João', 'Alon', 'Alessandra', 'Amanda']
 
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+    posts = Post.query.order_by(Post.id.desc())
+    return render_template('home.html', posts=posts)
 
 
 @app.route('/contato')
@@ -22,6 +22,7 @@ def contato():
 @app.route('/usuarios')
 @login_required
 def usuarios():
+    lista_usuarios = Usuario.query.all()
     return render_template('usuarios.html', lista_usuarios=lista_usuarios)
 
 
@@ -70,12 +71,21 @@ def salvar_imgem(imagem):
     codigo = secrets.token_hex(8)
     nome, extensao = os.path.splitext(imagem.filename)
     nome_arquivo = nome + codigo + extensao
-    caminho_completo = os.path.join(app.root_path, 'static/fotos_perfil',nome_arquivo)
+    caminho_completo = os.path.join(app.root_path, 'static/fotos_perfil', nome_arquivo)
     tamanho = (200, 200)
     imagem_reduzida = Image.open(imagem)
     imagem_reduzida.thumbnail(tamanho)
     imagem_reduzida.save(caminho_completo)
     return nome_arquivo
+
+
+def atualizar_cursos(form):
+    lista_cursos = []
+    for campo in form:
+        if "curso_" in campo.name:
+            if campo.data:
+                lista_cursos.append(campo.label.text)
+    return ';'.join(lista_cursos)
 
 
 @app.route('/perfil/editar', methods=['GET', 'POST'])
@@ -88,6 +98,7 @@ def editar_perfil():
         if form.foto_perfil.data:
             nome_imagem = salvar_imgem(form.foto_perfil.data)
             current_user.foto_perfil = nome_imagem
+        current_user.cursos = atualizar_cursos(form)
         db.session.commit()
         flash('Perfil atualizado com sucesso', 'alert-success')
         return redirect(url_for('perfil'))
@@ -98,7 +109,34 @@ def editar_perfil():
     return render_template('editarperfil.html', foto_perfil=foto_perfil, form=form)
 
 
-@app.route('/post/criar')
+@app.route('/post/criar', methods=['GET', 'POST'])
 @login_required
 def criar_post():
-    return render_template('criarpost.html')
+    form = FormCriarPost()
+    #current_user = current_user
+    if form.validate_on_submit():
+        post = Post(titulo=form.titulo.data, corpo=form.corpo.data, autor=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('Post Criado com Sucesso', 'alert-success')
+        return redirect(url_for('home'))
+    return render_template('criarpost.html', form=form)
+
+@app.route('/post/<post_id>', methods=['GET', 'POST'])
+@login_required
+def exibir_post(post_id):
+    post = Post.query.get(post_id)
+    if current_user == post.autor:
+        form = FormEditarPost()
+        if request.method == 'GET':
+            form.titulo.data = post.titulo
+            form.corpo.data = post.corpo
+    elif form.validate_on_submit():
+        post.titulo = form.titulo.data
+        post.corpo = form.corpo.data
+        db.session.commit()
+        flash('Post Atualizado com Sucesso', 'alert-success')
+        return redirect(url_for('home'))
+    else:
+        form = None
+    return render_template('post.html', post=post, form=form)

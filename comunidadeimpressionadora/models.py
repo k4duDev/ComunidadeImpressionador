@@ -1,5 +1,5 @@
 from comunidadeimpressionadora import db, login_manager
-from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from flask_login import UserMixin

@@ -3,12 +3,38 @@
 
 {% block body %}
 
+<div class="container mt-3">
+    <div class="row border mt-4 p-3 meupost">
+        <div class="col col-3">
+            <div class="image pe-2">
+                <img src="{{ url_for('static', filename='fotos_perfil/{}'.format(post.autor.foto_perfil)) }}"
+                    class="rounded" width="200">
+            </div>
+            <strong>{{ post.autor.username }}</strong>
+            <div class="row justify-content-center" style="text-align: center">
+                <div class="col col-4">
+                    <strong>Cursos</strong><br>
+                    {% for curso in post.autor.cursos.split(';') %}
+                    <button type="button" class="btn btn-success mt-2" disabled>{{ curso }}</button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col col-9">
+            <h3>{{ post.titulo }}</h3>
+            <p>{{ post.corpo }}</p>
+        </div>
+    </div>
+</div>
+
+{% if form %}
+
 <div class="container">
     <div class="row">
         <div class="col">
             <form method="POST" action="" class="border p-4 mt-2">
                 {{ form.csrf_token }}
-                <legend>Criar Post</legend>
+                <legend>Editar Post</legend>
                 <fieldset>
                     <div class="form-group">
                         {{ form.titulo.label(class="form-control-label") }}
@@ -43,5 +69,7 @@
         </div>
     </div>
 </div>
+
+{% endif %}
 
 {% endblock %}
